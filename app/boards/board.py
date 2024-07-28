@@ -6,3 +6,6 @@ class Board:
         self.board = board
         self.rowCount = rowCount
         self.colCount = colCount
+
+
+        
