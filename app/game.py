@@ -67,13 +67,4 @@ def game_redrawAll(app):
     drawLabel(app.gameLevel, 40, 40)
     drawLabel(f"{app.gameBoard.rowCount}x{app.gameBoard.colCount}", 40, 60)
     drawLabel(gameTime, 40, 80)
-
-
-    # for i in range(app.gameBoard.rowCount):
-    #     for j in range(app.gameBoard.colCount):
-    #         v = app.gameBoard.board[i][j]
-    #         l = str(v)
-    #         if v == 0:
-    #             l = ' '
-
-    #         drawLabel(l, 40*i, 60 + 40*j)
+    
