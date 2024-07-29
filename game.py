@@ -28,8 +28,8 @@ def game_onMousePress(app, mouseX, mouseY):
         app.gameScreen.selectedCell = None
 
 def game_onKeyPress(app, key):
-    if app.gameScreen.selectedCell != None:
-        if '1' <= key <= '9':
+    if '1' <= key <= '9':
+        if app.gameScreen.selectedCell != None:
             n = int(key)
             sc = app.gameScreen.selectedCell
             if app.gameBoard.board[sc[0]][sc[1]] == 0:
@@ -37,6 +37,24 @@ def game_onKeyPress(app, key):
                     app.gameScreen.invalidOption = n
                 else:
                     app.gameScreen.invalidOption = None
+    elif key == 'left' or key == 'right' or key == 'up' or key == 'down':
+        sc = app.gameScreen.selectedCell
+        if sc == None:
+            app.gameScreen.selectedCell = (0, 0)
+        else:
+            if key == 'left':
+                if sc[1] - 1 >= 0:
+                    sc = (sc[0], sc[1] - 1)
+            elif key == 'right':
+                if sc[1] + 1 < 9:
+                    sc = (sc[0], sc[1] + 1)
+            elif key == 'down':
+                if sc[0] + 1 < 9:
+                    sc = (sc[0] + 1, sc[1])
+            elif key == 'up':
+                if sc[0] - 1 >= 0:
+                    sc = (sc[0] - 1, sc[1])
+            app.gameScreen.selectedCell = sc
 
 # from cmu cs academy notes 6.2.3
 def drawBoard(app):
