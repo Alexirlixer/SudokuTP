@@ -13,6 +13,7 @@ class GameScreen:
         self.cellHeight = self.boardHeight // 9
         self.selectedCell = None
         self.invalidOption = None
+        self.hint = None
 
 def game_onAppStart(app):
     app.gameScreen = GameScreen()
@@ -20,6 +21,8 @@ def game_onAppStart(app):
 
 def game_onMousePress(app, mouseX, mouseY):
     app.gameScreen.invalidOption = None
+    app.gameScreen.hint = None
+
     col = (mouseX - app.gameScreen.boardLeft) // (app.gameScreen.cellWidth)
     row = (mouseY - app.gameScreen.boardTop) // (app.gameScreen.cellHeight)
     if 0 <= col < 9 and 0 <= row < 9:
@@ -28,6 +31,9 @@ def game_onMousePress(app, mouseX, mouseY):
         app.gameScreen.selectedCell = None
 
 def game_onKeyPress(app, key):
+    app.gameScreen.hint = None
+    app.gameScreen.invalidOption = None
+
     if '1' <= key <= '9':
         if app.gameScreen.selectedCell != None:
             n = int(key)
@@ -55,6 +61,11 @@ def game_onKeyPress(app, key):
                 if sc[0] - 1 >= 0:
                     sc = (sc[0] - 1, sc[1])
             app.gameScreen.selectedCell = sc
+    elif key == 'h':
+        app.gameScreen.hint = app.gameBoard.getHint()
+
+            
+
 
 # from cmu cs academy notes 6.2.3
 def drawBoard(app):
@@ -82,7 +93,15 @@ def drawCell(app, row, col):
             (rowBlockStart <= row < rowBlockStart + 3 and 
              colBlockStart <= col < colBlockStart + 3)):
             fillColor = 'lightGrey'
-        
+
+    if app.gameScreen.hint != None:
+        sc = app.gameScreen.selectedCell
+        for cell in app.gameScreen.hint.cells:
+            if cell == (row, col):
+                fillColor = 'lightBlue'
+                if cell == sc:
+                    fillColor = 'lightSteelBlue'
+
     cellLeft, cellTop = getCellLeftTop(app, row, col)
     cellWidth, cellHeight = getCellSize(app)
     drawRect(cellLeft, cellTop, cellWidth, cellHeight,
