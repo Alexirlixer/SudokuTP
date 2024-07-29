@@ -18,13 +18,13 @@ def menu_onMouseMove(app, mouseX, mouseY):
     for button in app.menuScreen.buttons:
         button.color = 'white'
         if button.mouseOver(mouseX, mouseY):
-            button.color = 'mediumSeaGreen'
+            button.color = 'forestGreen'
 
 def menu_onMousePress(app, mouseX, mouseY):
      for button in app.menuScreen.buttons:
         button.color = 'white'
         if button.mouseOver(mouseX, mouseY):
-            button.color = 'mediumSeaGreen'
+            button.color = 'forestGreen'
             setActiveScreen(button.name)
 
 def menu_redrawAll(app):

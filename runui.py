@@ -5,6 +5,7 @@ from help import *
 from play import *
 from game import *
 from boards.loader import FileBoardLoader 
+from boards.hints import *
 
 def onAppStart(app):
     print('app starting')

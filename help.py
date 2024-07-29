@@ -28,8 +28,3 @@ def help_redrawAll(app):
     for button in app.helpScreen.buttons:
         button.draw()
 
-    # # for back button
-    # drawCircle(app.backcx, app.backcy, app.r, 
-    #            fill = app.backCircleColor, border = 'black', borderWidth = 5)
-    # drawLabel('Back', app.backcx, app.backcy, size = 20)
-
