@@ -28,7 +28,6 @@ def menu_onMousePress(app, mouseX, mouseY):
             setActiveScreen(button.name)
 
 def menu_redrawAll(app):
-    drawRect(0, 0, 400, 600, fill = None, border = 'black', borderWidth = 10)
     drawLabel('Sudoku', 200, 100, size = 85)
 
     for button in app.menuScreen.buttons:

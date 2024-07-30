@@ -14,7 +14,11 @@ def onAppStart(app):
 def onAppStop(app):
     print('app stopping')
 
+# def onStep(app):
+#     pass
+
 def main():
-    runAppWithScreens(initialScreen = 'splash', width = 400, height = 600)
+    runAppWithScreens(initialScreen = 'splash', width = 520, height = 570)
+
 
 main()
