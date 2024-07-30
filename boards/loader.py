@@ -39,7 +39,7 @@ class FileBoardLoader(BoardLoader):
             'medium': [],
             'hard': [],
             'expert': [],
-            'evil' : []
+            'evil': []
         }
 
         for filename in os.listdir(self.folder):

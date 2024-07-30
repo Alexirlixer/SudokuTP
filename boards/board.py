@@ -47,6 +47,33 @@ def getBoardLegals(board):
     return legals
 
 
+def fillUpdateBoardLegals(board, row, col):
+    # update board legals when a cell is filled
+    v = board.board[row][col]
+
+    # update this cell's legals
+    board.legals.pop((row, col))
+
+    rowBlockStart = row // 3 * 3
+    rowBlockEnd = rowBlockStart + 3
+    colBlockStart = col // 3 * 3
+    colBlockEnd = colBlockStart + 3
+
+    # update region cells legals - same row, same col, or same block
+    emptyLegals = set()
+    for cell, legals in board.legals.items():
+        if (row == cell[0] or col == cell[1] or
+                (rowBlockStart <= cell[0] < rowBlockEnd and colBlockStart <= cell[1] < colBlockEnd)):
+            if v in legals:
+                legals.remove(v)
+                if len(legals) == 0:
+                    emptyLegals.add(cell)
+
+    # remove any empty legals
+    for cell in emptyLegals:
+        board.legals.pop(cell)
+
+
 def getSolverCellCandidate(board):
     bestCell = None
     bestLen = 10
@@ -62,12 +89,45 @@ def getSolverCellCandidate(board):
     return bestCell
 
 
+def checkSolverDeadend(board, row, col, v):
+    # check by putting v in (row, col) we end up
+    # with empty cells that have no legals
+    rowBlockStart = row // 3 * 3
+    rowBlockEnd = rowBlockStart + 3
+    colBlockStart = col // 3 * 3
+    colBlockEnd = colBlockStart + 3
+
+    # update region cells legals - same row, same col, or same block
+    for cell, legals in board.legals.items():
+        if row == cell[0] and col == cell[1]:
+            # same cell, skip it
+            continue
+
+        if (row == cell[0] or col == cell[1] or
+                (rowBlockStart <= cell[0] < rowBlockEnd and colBlockStart <= cell[1] < colBlockEnd)):
+            if v in legals:
+                if len(legals) == 1:
+                    # a cell with  single legal which is the same value - we have a deadend
+                    return True
+
+    return False
+
+def getEmtpyCellCount(board):
+    emptyCount = 0
+    for row in board:
+        for cell in row:
+            if cell == 0:
+                emptyCount += 1
+    return emptyCount
+
+
 class Board:
     def __init__(self, board):
         self.board = board
         self.rowCount = len(board)
         self.colCount = len(board[0])
         self.legals = getBoardLegals(board)
+        self.emptyCount = getEmtpyCellCount(board)
 
     def fillCell(self, row, col, value):
         if self.board[row][col] != 0:
@@ -78,15 +138,18 @@ class Board:
             return False
 
         self.board[row][col] = value
-        self.legals = getBoardLegals(self.board)
+        fillUpdateBoardLegals(self, row, col)
+        #self.legals = getBoardLegals(self.board)
+        self.emptyCount -= 1
 
         return True
 
     def isSolved(self):
-        if len(self.legals) == 0:
-            return True
-
-        return False
+        # for row in self.board:
+        #     if 0 in row:
+        #         return False
+        # return True
+        return self.emptyCount == 0
 
     def print(self):
         columns = '  '.join([str(i) for i in range(self.colCount)])
@@ -98,8 +161,10 @@ class Board:
             i += 1
 
     def emptyCell(self, row, cell):
-        self.board[row][cell] = 0
-        self.legals = getBoardLegals(self.board)
+        if self.board[row][cell] != 0:
+            self.board[row][cell] = 0
+            self.legals = getBoardLegals(self.board)
+            self.emptyCount += 1
 
     def solve(self):
         cell = getSolverCellCandidate(self)
@@ -109,6 +174,10 @@ class Board:
         # try to solve using legals
         legals = self.legals[cell]
         for number in legals:
+            if checkSolverDeadend(self, cell[0], cell[1], number):
+                # not a good option, skip it
+                continue
+
             self.fillCell(cell[0], cell[1], number)
             if self.solve():
                 return True

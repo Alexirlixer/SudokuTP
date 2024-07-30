@@ -1,3 +1,4 @@
+import copy
 import itertools
 
 
@@ -62,7 +63,7 @@ def getCellsLegals(board, cells):
     return legals
 
 
-def getRegionObviousTuples(board, row=-1, col=-1):
+def getRegionHint(board, region, row=-1, col=-1):
     cells = getRegionEmptyCells(board, row, col)
     if cells == None:
         return None
@@ -72,7 +73,15 @@ def getRegionObviousTuples(board, row=-1, col=-1):
         for o in itertools.combinations(cells, i):
             legals = getCellsLegals(board, o)
             if len(legals) == i:
-                return o
+                # we have a hint candidate
+                hint = Hint(region, o)
+
+                # check if applying this hint would update any legals
+                # if there are no legals to update this is a useless hint
+                # so skip it
+                affectedLegals = getHintAffectedLegals(board, hint)
+                if len(affectedLegals) > 0:
+                    return hint
 
     return None
 
@@ -85,26 +94,27 @@ def getBoardObviousTuples(board):
     # check each block
     for i in range(0, board.rowCount, blockSize):
         for j in range(0, board.colCount, blockSize):
-            tuples = getRegionObviousTuples(board, row=i, col=j)
-            if tuples != None:
-                return Hint('block', tuples)
+            hint = getRegionHint(board, 'block', row=i, col=j)
+            if hint != None:
+                return hint
 
     # check each row
     for i in range(board.rowCount):
-        tuples = getRegionObviousTuples(board, row=i)
-        if tuples != None:
-            return Hint('row', tuples)
+        hint = getRegionHint(board, 'row', row=i)
+        if hint != None:
+            return hint
 
     # check each column
     for j in range(board.colCount):
-        tuples = getRegionObviousTuples(board, col=j)
-        if tuples != None:
-            return Hint('col', tuples)
+        hint = getRegionHint(board, 'col', col=j)
+        if hint != None:
+            return hint
 
     return None
 
 
-def appyBoardObviousTuples(board, hint):
+def getHintAffectedLegals(board, hint):
+    # get legals for cells affected if we apply this hint
     # collect all empty cells from the same region
     if hint.region == 'row':
         cell = hint.cells[0]
@@ -124,18 +134,30 @@ def appyBoardObviousTuples(board, hint):
     for cell in hint.cells:
         affectedCells.remove(cell)
 
-    # collect union of legals from the hint so we can remove them
-    # from cells that need to be updated
+        # collect union of legals from the hint so we can remove them
+        # from cells that need to be updated
     hintLegals = getCellsLegals(board, hint.cells)
 
-    # update legals
+    # get legals that need to be set when applying this hint
+    affectedLegals = {}
     for cell in affectedCells:
         # get affected cell legals and remove from them anything
         # that is part of the hint
-        cellLegals = board.legals[cell]
+        changed = False
+        cellLegals = copy.copy(board.legals[cell])
         for l in hintLegals:
             if l in cellLegals:
+                changed = True
                 cellLegals.remove(l)
 
-        # update the current legals for the cell
-        board.legals[cell] = cellLegals
+        if changed:
+            # this cells legals will change
+            affectedLegals[cell] = cellLegals
+
+    return affectedLegals
+
+def appyBoardObviousTuples(board, hint):
+    affectedLegals = getHintAffectedLegals(board, hint)
+
+    for cell, legals in affectedLegals.items():
+        board.legals[cell] = legals
