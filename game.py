@@ -25,7 +25,10 @@ class GameScreen:
         self.invalidOption = None
         self.hint = None
         self.legals = False
-        self.buttons = [Button('back', 20, 550, 80, 50, shape='oval')]
+        self.buttons = [Button('back', 20, 550, 80, 50, shape='oval'),
+                        Button('manual', 80, 40, 40, 40, shape = 'rect')]
+        self.manualLegals = dict()
+        self.manualLegalsOn = False
 
 def game_onAppStart(app):
     app.gameScreen = GameScreen()
@@ -44,7 +47,10 @@ def game_onMousePress(app, mouseX, mouseY):
         button.color = 'white'
         if button.mouseOver(mouseX, mouseY):
             button.color = 'mediumSeaGreen'
-            setActiveScreen('play')
+            if button.name == 'back':
+                setActiveScreen('play')
+            elif button.name == 'manual': 
+                app.gameScreen.manualLegalsOn = not app.gameScreen.manualLegalsOn
 
     col = (mouseX - app.gameScreen.boardLeft) // (app.gameScreen.cellWidth)
     row = (mouseY - app.gameScreen.boardTop) // (app.gameScreen.cellHeight)
@@ -55,17 +61,35 @@ def game_onMousePress(app, mouseX, mouseY):
 
 def game_onKeyPress(app, key):
     app.gameScreen.invalidOption = None
-
+    # this map is for holding shift and pressing #'s
+    keyMap = ['!', '@', '#', '$', '%', '^', '&', '*', '(']
+    
     if '1' <= key <= '9':
         app.gameScreen.hint = None
         if app.gameScreen.selectedCell != None:
             n = int(key)
             sc = app.gameScreen.selectedCell
+
             if app.gameBoard.board[sc[0]][sc[1]] == 0:
                 if not app.gameBoard.fillCell(sc[0], sc[1], n):
                     app.gameScreen.invalidOption = n
                 else:
                     app.gameScreen.invalidOption = None
+           
+    elif key in keyMap:
+        app.gameScreen.hint = None
+        if app.gameScreen.selectedCell != None and app.gameScreen.manualLegalsOn:
+            n = keyMap.index(key) + 1
+            sc = app.gameScreen.selectedCell
+
+            if sc not in app.gameScreen.manualLegals:
+                app.gameScreen.manualLegals[sc] = []
+            legals = app.gameScreen.manualLegals[sc]
+            if n in legals:
+                legals.remove(n)
+            else:
+                legals.append(n)
+
     elif key == 'left' or key == 'right' or key == 'up' or key == 'down':
         app.gameScreen.hint = None
         sc = app.gameScreen.selectedCell
@@ -97,7 +121,7 @@ def game_onKeyPress(app, key):
         if app.gameScreen.hint != None: 
             app.gameBoard.applyHint(app.gameScreen.hint)
         app.gameScreen.hint = None
-            
+
 # from cmu cs academy notes 6.2.3
 def drawBoard(app):
     for row in range(app.gameBoard.rowCount):
@@ -141,10 +165,18 @@ def drawCell(app, row, col):
     
     if app.gameBoard.board[row][col] == 0:
         drawLabel(cellLabel, cellLeft + cellWidth/2, cellTop + cellHeight/2, size = 25)
-        if app.gameScreen.legals == True:
+        if app.gameScreen.legals == True or app.gameScreen.manualLegalsOn:
             legalWidth = cellWidth / 3
-            legalHeight = cellHeight / 3
+            legalHeight = cellHeight / 3 
+
             legals = app.gameBoard.legals[(row, col)]
+            if app.gameScreen.manualLegalsOn:
+                if (row, col) in app.gameScreen.manualLegals:
+                    legals = app.gameScreen.manualLegals[(row, col)] 
+                else:
+                    legals = []
+                
+                    
             for i in range(3):
                 for j in range(3):
                     l = ''
@@ -152,7 +184,7 @@ def drawCell(app, row, col):
                     if v in legals:
                         l = str(v)
                     drawLabel(l, cellLeft + 7 + legalWidth * j, cellTop + 7
-                            + legalHeight * i, size = 10, fill = 'dimGray')
+                            + legalHeight * i, size = 10, fill = 'black')
     else:
         s = str(app.gameBoard.board[row][col])
         drawLabel(s, cellLeft + cellWidth/2, cellTop + cellHeight/2, size = 25)
