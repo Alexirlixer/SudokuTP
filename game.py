@@ -3,15 +3,6 @@ import time
 import datetime 
 from button import *
 
-# there is a bug, when you are on a red cell -->
-# (an incorrect value was entered) and you press a key that -->
-# is not 1 - 9, the cell will unselect and turn -->
-# grey again
-# also when you click on a red cell the cell will -->
-# unselect (idk if this is worth changing)
-# also when you press the hint button while you have a red cell it -->
-# will unselect the cell and turn grey
-
 class GameScreen:
     def __init__(self):
         self.boardLeft = 70
@@ -44,6 +35,10 @@ def game_onMouseMove(app, mouseX, mouseY):
         button.mouseOver(mouseX, mouseY)
 
 def game_onMousePress(app, mouseX, mouseY):
+    if app.gameBoard.isSolved():
+        setActiveScreen('play')
+        return
+
     app.gameScreen.invalidOption = None
     app.gameScreen.hint = None
 
@@ -51,7 +46,7 @@ def game_onMousePress(app, mouseX, mouseY):
         button.mousePress(mouseX, mouseY)
         if button.isSelected:
             if button.text == 'back':
-                app.switchScreenSound.play()
+                app.screenSwitchSound.play()
                 setActiveScreen('play')
             elif button.text == 'manual': 
                 app.gameScreen.manualLegalsOn = button.isChecked
@@ -70,6 +65,11 @@ def game_onMousePress(app, mouseX, mouseY):
         app.gameScreen.selectedCell = None
 
 def game_onKeyPress(app, key):
+    if app.gameBoard.isSolved():
+        if key == 'r':
+            setActiveScreen('play')
+        return
+    
     app.gameScreen.invalidOption = None
     # this map is for holding shift and pressing #'s
     keyMap = ['!', '@', '#', '$', '%', '^', '&', '*', '(']
@@ -258,12 +258,20 @@ def game_redrawAll(app):
     
     # drawLabel(app.gameLevel, )
     app.gameScreen.timer.draw()
-    drawLabel(app.gameLevel, 40, 40)
-    drawLabel(f"{app.gameBoard.rowCount}x{app.gameBoard.colCount}", 40, 60)
+    drawLabel(f'Level: {app.gameLevel.capitalize()}', 100, 50, font = 'cinzel',
+              fill = 'black', size = 17, opacity = 60)
+    # drawLabel(app.gameLevel, 40, 40)
+
+
+    # drawLabel(f"{app.gameBoard.rowCount}x{app.gameBoard.colCount}", 40, 60)
     for button in app.gameScreen.buttons:
         button.draw()
     drawLabel('Legals', 385, 500, font='cinzel',
                   size=17, fill='black', border='black', borderWidth=0,
                   opacity=60)
+    if app.gameBoard.isSolved():
+        drawRect(60, 200, 440, 160, fill="lightgray", opacity=80)
+        drawLabel('Game Over', 280, 275, font='cinzel', size=80, fill='lightgray',
+                    border='forestgreen', borderWidth=2, opacity=100)
 
 
