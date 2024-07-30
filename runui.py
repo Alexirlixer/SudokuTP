@@ -18,7 +18,7 @@ def onAppStop(app):
 #     pass
 
 def main():
-    runAppWithScreens(initialScreen = 'play', width = 520, height = 570)
+    runAppWithScreens(initialScreen = 'splash', width = 520, height = 570)
 
 
 main()

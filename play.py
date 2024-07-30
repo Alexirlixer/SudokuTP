@@ -42,6 +42,24 @@ def play_onMousePress(app, mouseX, mouseY):
                 app.gameBoard = app.boardLoader.loadBoard(app.gameLevel)
                 app.gameStart = time.time()
                 setActiveScreen('game')
+
+def play_onKeyPress(app, key):
+    if key == 'up':
+        onKeyUpdateButtons(app.playScreen.buttons, True)
+    elif key == 'down':
+        onKeyUpdateButtons(app.playScreen.buttons, False)
+    elif key == 'enter':
+        for button in app.playScreen.buttons:
+            if button.isSelected:
+                if button.text == 'back':
+                    app.screenSwitchSound.play()
+                    setActiveScreen('menu')
+                else:
+                    app.screenSwitchSound.play()
+                    app.gameLevel = button.text
+                    app.gameBoard = app.boardLoader.loadBoard(app.gameLevel)
+                    app.gameStart = time.time()
+                    setActiveScreen('game')
             
 
     # for button in app.playScreen.buttons:
