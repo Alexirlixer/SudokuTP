@@ -24,9 +24,12 @@ class GameScreen:
         self.selectedCell = None
         self.invalidOption = None
         self.hint = None
-        self.legals = False
-        self.buttons = [Button('back', 20, 550, 80, 50, shape='oval'),
-                        Button('manual', 80, 40, 40, 40, shape = 'rect')
+        self.autoLegalsOn = False
+        self.checkBoxAutoLegals = Checkbox('auto', 480, 530, 'black', 'black')
+        self.checkBoxManualLegals = Checkbox('manual', 400, 530, 'black', 'black')
+        self.buttons = [LabelButton('back', 50, 520, 'black', 'black', size = 20),
+                        self.checkBoxManualLegals,
+                        self.checkBoxAutoLegals
                         ]
         # difficulty, maybe mistakes, legal mode (auto/manual) 1 - 9
         self.manualLegals = dict()
@@ -38,22 +41,26 @@ def game_onAppStart(app):
     
 def game_onMouseMove(app, mouseX, mouseY):
     for button in app.gameScreen.buttons:
-        button.color = 'white'
-        if button.mouseOver(mouseX, mouseY):
-            button.color = 'mediumSeaGreen'
+        button.mouseOver(mouseX, mouseY)
 
 def game_onMousePress(app, mouseX, mouseY):
     app.gameScreen.invalidOption = None
     app.gameScreen.hint = None
 
     for button in app.gameScreen.buttons:
-        button.color = 'white'
-        if button.mouseOver(mouseX, mouseY):
-            button.color = 'mediumSeaGreen'
-            if button.name == 'back':
+        button.mousePress(mouseX, mouseY)
+        if button.isSelected:
+            if button.text == 'back':
+                app.switchScreenSound.play()
                 setActiveScreen('play')
-            elif button.name == 'manual': 
-                app.gameScreen.manualLegalsOn = not app.gameScreen.manualLegalsOn
+            elif button.text == 'manual': 
+                app.gameScreen.manualLegalsOn = button.isChecked
+                app.gameScreen.autoLegalsOn = False
+                app.gameScreen.checkBoxAutoLegals.isChecked = False
+            elif button.text == 'auto':
+                app.gameScreen.manualLegalsOn = False
+                app.gameScreen.autoLegalsOn = button.isChecked
+                app.gameScreen.checkBoxManualLegals.isChecked = False
 
     col = (mouseX - app.gameScreen.boardLeft) // (app.gameScreen.cellWidth)
     row = (mouseY - app.gameScreen.boardTop) // (app.gameScreen.cellHeight)
@@ -94,6 +101,10 @@ def game_onKeyPress(app, key):
                 legals.append(n)
 
     elif key == 'left' or key == 'right' or key == 'up' or key == 'down':
+        if key == 'up':
+            onKeyUpdateButtons(app.gameScreen.buttons, True)
+        elif key == 'down':
+            onKeyUpdateButtons(app.gameScreen.buttons, False)
         app.gameScreen.hint = None
         sc = app.gameScreen.selectedCell
         if sc == None:
@@ -116,7 +127,7 @@ def game_onKeyPress(app, key):
         app.gameScreen.hint = app.gameBoard.getHint()
     elif key == 'l':
         app.gameScreen.hint = None
-        app.gameScreen.legals = not app.gameScreen.legals
+        app.gameScreen.autoLegalsOn = not app.gameScreen.autoLegalsOn
     elif key == 's':
         app.gameScreen.hint = None
         app.gameBoard.solve()
@@ -124,6 +135,14 @@ def game_onKeyPress(app, key):
         if app.gameScreen.hint != None: 
             app.gameBoard.applyHint(app.gameScreen.hint)
         app.gameScreen.hint = None
+    elif key == 'enter':
+        for button in app.gameScreen.buttons:
+            if button.isSelected:
+                if type(button) == Checkbox:
+                    button.isChecked = not button.isChecked
+                elif type(button) == LabelButton:
+                    pass
+
 
 # from cmu cs academy notes 6.2.3
 def drawBoard(app):
@@ -171,7 +190,7 @@ def drawCell(app, row, col):
     
     if app.gameBoard.board[row][col] == 0:
         drawLabel(cellLabel, cellLeft + cellWidth/2, cellTop + cellHeight/2, size = 25)
-        if app.gameScreen.legals == True or app.gameScreen.manualLegalsOn:
+        if app.gameScreen.autoLegalsOn == True or app.gameScreen.manualLegalsOn:
             legalWidth = cellWidth / 3
             legalHeight = cellHeight / 3 
 
@@ -243,5 +262,8 @@ def game_redrawAll(app):
     drawLabel(f"{app.gameBoard.rowCount}x{app.gameBoard.colCount}", 40, 60)
     for button in app.gameScreen.buttons:
         button.draw()
+    drawLabel('Legals', 385, 500, font='cinzel',
+                  size=17, fill='black', border='black', borderWidth=0,
+                  opacity=60)
 
 

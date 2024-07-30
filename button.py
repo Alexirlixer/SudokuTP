@@ -89,7 +89,7 @@ class Checkbox:
     def mousePress(self, mouseX, mouseY):
        if self.mouseOver(mouseX, mouseY):
            self.isChecked = not self.isChecked
-       return self.isChecked
+      # return self.isChecked
 
     def mouseOver(self, mouseX, mouseY):
         # calculate the positions from center for left, right, top, bottom
