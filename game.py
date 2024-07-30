@@ -1,6 +1,16 @@
 from cmu_graphics import *
 import time 
 import datetime 
+from button import *
+
+# there is a bug, when you are on a red cell -->
+# (an incorrect value was entered) and you press a key that -->
+# is not 1 - 9, the cell will unselect and turn -->
+# grey again
+# also when you click on a red cell the cell will -->
+# unselect (idk if this is worth changing)
+# also when you press the hint button while you have a red cell it -->
+# will unselect the cell and turn grey
 
 class GameScreen:
     def __init__(self):
@@ -14,14 +24,27 @@ class GameScreen:
         self.selectedCell = None
         self.invalidOption = None
         self.hint = None
+        self.legals = False
+        self.buttons = [Button('back', 20, 550, 80, 50, shape='oval')]
 
 def game_onAppStart(app):
     app.gameScreen = GameScreen()
     
+def game_onMouseMove(app, mouseX, mouseY):
+    for button in app.gameScreen.buttons:
+        button.color = 'white'
+        if button.mouseOver(mouseX, mouseY):
+            button.color = 'mediumSeaGreen'
 
 def game_onMousePress(app, mouseX, mouseY):
     app.gameScreen.invalidOption = None
     app.gameScreen.hint = None
+
+    for button in app.gameScreen.buttons:
+        button.color = 'white'
+        if button.mouseOver(mouseX, mouseY):
+            button.color = 'mediumSeaGreen'
+            setActiveScreen('play')
 
     col = (mouseX - app.gameScreen.boardLeft) // (app.gameScreen.cellWidth)
     row = (mouseY - app.gameScreen.boardTop) // (app.gameScreen.cellHeight)
@@ -63,17 +86,18 @@ def game_onKeyPress(app, key):
             app.gameScreen.selectedCell = sc
     elif key == 'h':
         app.gameScreen.hint = app.gameBoard.getHint()
-
+    elif key == 'l':
+        app.gameScreen.legals = not app.gameScreen.legals
+    elif key == 's':
+        app.gameBoard.solve()
             
-
-
 # from cmu cs academy notes 6.2.3
 def drawBoard(app):
     for row in range(app.gameBoard.rowCount):
         for col in range(app.gameBoard.colCount):
             drawCell(app, row, col)
 
-# from cmu cs academy notes 6.2.3
+# Basic function is from cmu cs academy notes 6.2.3
 def drawCell(app, row, col):
     cellLabel = ''
     fillColor = None
@@ -110,6 +134,18 @@ def drawCell(app, row, col):
     
     if app.gameBoard.board[row][col] == 0:
         drawLabel(cellLabel, cellLeft + cellWidth/2, cellTop + cellHeight/2, size = 25)
+        if app.gameScreen.legals == True:
+            legalWidth = cellWidth / 3
+            legalHeight = cellHeight / 3
+            legals = app.gameBoard.legals[(row, col)]
+            for i in range(3):
+                for j in range(3):
+                    l = ''
+                    v = (i * 3) + j + 1
+                    if v in legals:
+                        l = str(v)
+                    drawLabel(l, cellLeft + 7 + legalWidth * j, cellTop + 7
+                            + legalHeight * i, size = 10, fill = 'dimGray')
     else:
         s = str(app.gameBoard.board[row][col])
         drawLabel(s, cellLeft + cellWidth/2, cellTop + cellHeight/2, size = 25)
@@ -131,9 +167,12 @@ def getCellSize(app):
 # from cmu cs academy notes 6.2.3
 def drawBoardBorder(app):
   # draw the board outline (with double-thickness):
-  drawRect(app.gameScreen.boardLeft, app.gameScreen.boardTop, app.gameScreen.boardWidth, app.gameScreen.boardHeight,
+  offset = 3
+  drawRect(app.gameScreen.boardLeft - offset, app.gameScreen.boardTop - offset, 
+           app.gameScreen.boardWidth + 
+           offset, app.gameScreen.boardHeight + offset,
            fill=None, border='black',
-           borderWidth=5*app.gameScreen.cellBorderWidth)
+           borderWidth=3*app.gameScreen.cellBorderWidth)
 
 def game_redrawAll(app):
     # https://stackoverflow.com/questions/775049/how-do-i-convert-seconds-to-hours-minutes-and-seconds
@@ -141,12 +180,14 @@ def game_redrawAll(app):
     gameTime = str(datetime.timedelta(seconds=elapsed))
     drawBoard(app)
     drawBoardBorder(app)
-    drawLine(137, 150, 137, 550, lineWidth = 5)
-    drawLine(263, 150, 263, 550, lineWidth = 5)
-    drawLine(10, 283, 390, 283, lineWidth = 5)
-    drawLine(10, 417, 390, 417, lineWidth = 5)
+    drawLine(137, 150, 137, 550, lineWidth = 3)
+    drawLine(263, 150, 263, 550, lineWidth = 3)
+    drawLine(10, 283, 390, 283, lineWidth = 3)
+    drawLine(10, 417, 390, 417, lineWidth = 3)
     drawLabel(app.gameLevel, 40, 40)
     drawLabel(f"{app.gameBoard.rowCount}x{app.gameBoard.colCount}", 40, 60)
     drawLabel(gameTime, 40, 80)
+    for button in app.gameScreen.buttons:
+        button.draw()
 
 

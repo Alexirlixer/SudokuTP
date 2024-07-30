@@ -1,6 +1,8 @@
 import os
 import random
+
 from boards.board import Board
+
 
 class BoardLoader(object):
     def __init__(self):
@@ -57,6 +59,3 @@ class FileBoardLoader(BoardLoader):
         boards = self.boards[level]
         i = random.randint(0, len(boards) - 1)
         return Board(boards[i])
-    
-
-    
