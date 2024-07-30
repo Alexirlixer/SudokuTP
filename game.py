@@ -14,8 +14,8 @@ from button import *
 
 class GameScreen:
     def __init__(self):
-        self.boardLeft = 10
-        self.boardTop = 150
+        self.boardLeft = 70
+        self.boardTop = 90
         self.boardWidth = 380
         self.boardHeight = 400
         self.cellBorderWidth = 1
@@ -26,9 +26,12 @@ class GameScreen:
         self.hint = None
         self.legals = False
         self.buttons = [Button('back', 20, 550, 80, 50, shape='oval'),
-                        Button('manual', 80, 40, 40, 40, shape = 'rect')]
+                        Button('manual', 80, 40, 40, 40, shape = 'rect')
+                        ]
+        # difficulty, maybe mistakes, legal mode (auto/manual) 1 - 9
         self.manualLegals = dict()
         self.manualLegalsOn = False
+        self.timer = TimerLabel('Elapsed', 440, 50)
 
 def game_onAppStart(app):
     app.gameScreen = GameScreen()
@@ -124,6 +127,9 @@ def game_onKeyPress(app, key):
 
 # from cmu cs academy notes 6.2.3
 def drawBoard(app):
+    s = app.gameScreen
+    drawRect(s.boardLeft, s.boardTop, s.boardWidth, s.boardHeight, fill = 
+             'white', opacity = 80)
     for row in range(app.gameBoard.rowCount):
         for col in range(app.gameBoard.colCount):
             drawCell(app, row, col)
@@ -214,18 +220,27 @@ def drawBoardBorder(app):
            borderWidth=3*app.gameScreen.cellBorderWidth)
 
 def game_redrawAll(app):
-    # https://stackoverflow.com/questions/775049/how-do-i-convert-seconds-to-hours-minutes-and-seconds
-    elapsed = int(time.time() - app.gameStart)
-    gameTime = str(datetime.timedelta(seconds=elapsed))
+    drawImage('./media/splash.png', 0, 0, opacity=60)
+    # drawLabel('Sudoku', 260, 100, font='cinzel', size=80, fill='forestgreen',
+               # border='lightgray', borderWidth=2, opacity=60)
     drawBoard(app)
     drawBoardBorder(app)
-    drawLine(137, 150, 137, 550, lineWidth = 3)
-    drawLine(263, 150, 263, 550, lineWidth = 3)
-    drawLine(10, 283, 390, 283, lineWidth = 3)
-    drawLine(10, 417, 390, 417, lineWidth = 3)
+    s = app.gameScreen
+    drawLine(s.boardLeft, s.boardTop + s.cellHeight * 3, s.boardLeft + s.boardWidth,
+             s.boardTop + s.cellHeight * 3, lineWidth = 3)
+    drawLine(s.boardLeft, s.boardTop + s.cellHeight * 6, s.boardLeft + s.boardWidth,
+             s.boardTop + s.cellHeight * 6, lineWidth = 3)
+    drawLine(s.boardLeft + s.cellWidth * 3, s.boardTop, 
+              s.boardLeft + s.cellWidth * 3, s.boardTop + s.boardHeight, 
+              lineWidth = 3)
+    drawLine(s.boardLeft + s.cellWidth * 6, s.boardTop, 
+              s.boardLeft + s.cellWidth * 6, s.boardTop + s.boardHeight, 
+              lineWidth = 3)
+    
+    # drawLabel(app.gameLevel, )
+    app.gameScreen.timer.draw()
     drawLabel(app.gameLevel, 40, 40)
     drawLabel(f"{app.gameBoard.rowCount}x{app.gameBoard.colCount}", 40, 60)
-    drawLabel(gameTime, 40, 80)
     for button in app.gameScreen.buttons:
         button.draw()
 
