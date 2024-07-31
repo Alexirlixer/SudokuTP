@@ -4,20 +4,22 @@ import itertools
 
 class Hint:
     def __init__(self, region, cells):
-        # region can be:
-        # - cell for single
-        # - row for tuples extracted from a single row
-        # - col for tuples extracted from a single col
-        # - block for tuples extracted from a block
+        # a region can be:
+        # - a cell for single
+        # - a row for tuples extracted from a single row
+        # - a col for tuples extracted from a single col
+        # - a block for tuples extracted from a block
         self.region = region
         self.cells = cells
 
 
 def getBoardObviousSingle(board):
     for cell, legals in board.legals.items():
+        # if a cell has one legal value, that is an obvious single
         if len(legals) == 1:
             return Hint('cell', [cell])
 
+    # otherwise there are no obvious singles
     return None
 
 
@@ -33,7 +35,7 @@ def getRegionEmptyCells(board, row=-1, col=-1):
 
     cells = set()
 
-    # collect all cells with legal candidates from the region
+    # collect all the cells with legal candidates from the region 
     # we're interested in
     for cell, legals in board.legals.items():
         if row == -1:
@@ -65,11 +67,12 @@ def getCellsLegals(board, cells):
 
 def getRegionHint(board, region, row=-1, col=-1):
     cells = getRegionEmptyCells(board, row, col)
+    # if there are no empty cells in the region we cannot get a region hint
     if cells == None:
         return None
 
     # check for obvious doubles and triples
-    for i in range(2, 4):
+    for i in range(2, 9):
         for o in itertools.combinations(cells, i):
             legals = getCellsLegals(board, o)
             if len(legals) == i:
@@ -128,21 +131,21 @@ def getHintAffectedLegals(board, hint):
     if affectedCells == None:
         return False
 
-    # remove from this list the cells which are part of the hint
+    # remove from this list from the cells which are part of the hint
     # so we are left only with the empty cells for which legals
     # need to be updated
     for cell in hint.cells:
         affectedCells.remove(cell)
 
-        # collect union of legals from the hint so we can remove them
-        # from cells that need to be updated
+        # collect union of legals from the hint so that we can remove them
+        # from the cells that need to be updated
     hintLegals = getCellsLegals(board, hint.cells)
 
     # get legals that need to be set when applying this hint
     affectedLegals = {}
     for cell in affectedCells:
-        # get affected cell legals and remove from them anything
-        # that is part of the hint
+        # get the effected cell legals and remove from them anything
+        # that's part of the hint
         changed = False
         cellLegals = copy.copy(board.legals[cell])
         for l in hintLegals:
@@ -151,7 +154,7 @@ def getHintAffectedLegals(board, hint):
                 cellLegals.remove(l)
 
         if changed:
-            # this cells legals will change
+            # this cell's legals will change
             affectedLegals[cell] = cellLegals
 
     return affectedLegals

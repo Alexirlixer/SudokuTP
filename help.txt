@@ -1,9 +1,9 @@
 Keyboard
-  - up, down, left, right arrows to navigate
+  - use arrows to navigate and enter to select
   - 1..9 keys to enter number in selected cell
-  - h to show hint, a to apply hint
-  - auto legals: display game tracked legals
-  - manual legals: manually input legals
+  - h to show hint, a to apply hint, b to go back
+  - l for auto legals
+  - m for manual legals
      - in this mode shift+1..9 will add/remove legals
   - r to start new game on game over  
 Mouse

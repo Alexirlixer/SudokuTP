@@ -40,8 +40,11 @@ def getBoardLegals(board):
     legals = {}
     for i in range(rowCount):
         for j in range(colCount):
+            # get the legals for each cell
             cellLegals = getCellLegals(board, i, j)
+            # check that cell has legals (not filled)
             if len(cellLegals) > 0:
+                # assign a [] of legals to that cell
                 legals[(i, j)] = [l for l in cellLegals]
 
     return legals
@@ -73,7 +76,6 @@ def fillUpdateBoardLegals(board, row, col):
     for cell in emptyLegals:
         board.legals.pop(cell)
 
-
 def getSolverCellCandidate(board):
     bestCell = None
     bestLen = 10
@@ -88,7 +90,7 @@ def getSolverCellCandidate(board):
 
     return bestCell
 
-
+# optimization function
 def checkSolverDeadend(board, row, col, v):
     # check by putting v in (row, col) we end up
     # with empty cells that have no legals
@@ -107,7 +109,7 @@ def checkSolverDeadend(board, row, col, v):
                 (rowBlockStart <= cell[0] < rowBlockEnd and colBlockStart <= cell[1] < colBlockEnd)):
             if v in legals:
                 if len(legals) == 1:
-                    # a cell with  single legal which is the same value - we have a deadend
+                    # a cell with single legal which is the same value - we have a deadend
                     return True
 
     return False
@@ -130,10 +132,12 @@ class Board:
         self.emptyCount = getEmtpyCellCount(board)
 
     def fillCell(self, row, col, value):
+        # can't fill this cell - has a value in it
         if self.board[row][col] != 0:
             return False
 
         cellLegals = self.legals[(row, col)]
+        # check if the value is legal
         if value not in cellLegals:
             return False
 
@@ -151,6 +155,7 @@ class Board:
         # return True
         return self.emptyCount == 0
 
+    # for testing
     def print(self):
         columns = '  '.join([str(i) for i in range(self.colCount)])
         print('   ' + columns)
@@ -160,12 +165,14 @@ class Board:
             print(i, row)
             i += 1
 
+    # for removing values from a cell
     def emptyCell(self, row, cell):
         if self.board[row][cell] != 0:
             self.board[row][cell] = 0
             self.legals = getBoardLegals(self.board)
             self.emptyCount += 1
 
+    # backtracker
     def solve(self):
         cell = getSolverCellCandidate(self)
         if cell == None:
@@ -174,34 +181,42 @@ class Board:
         # try to solve using legals
         legals = self.legals[cell]
         for number in legals:
+            # optimization
             if checkSolverDeadend(self, cell[0], cell[1], number):
                 # not a good option, skip it
                 continue
 
             self.fillCell(cell[0], cell[1], number)
+            # if it can be solved return true
             if self.solve():
                 return True
+            # otherwise empty the cell
             self.emptyCell(cell[0], cell[1])
 
         # not resolved
         return False
 
     def getHint(self):
+        # try to get an obvious single hint
         hint = getBoardObviousSingle(self)
         if hint != None:
             return hint
 
+        # otherwise get an obvious tuple hint
         return getBoardObviousTuples(self)
 
     def applyHint(self, hint):
+        # if there is no hint a hint cannot be applied
         if hint == None:
             return False
 
-        # single obvious
+        # apply an obvious single hint
         if hint.region == 'cell':
             cell = hint.cells[0]
             hints = self.legals[cell]
             self.fillCell(cell[0], cell[1], hints[0])
             return True
 
+        # otherwise apply an obvious tuple hint
         return appyBoardObviousTuples(self, hint)
+    

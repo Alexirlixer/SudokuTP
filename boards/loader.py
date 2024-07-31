@@ -3,7 +3,7 @@ import random
 
 from boards.board import Board
 
-
+# potentially for random board generation
 class BoardLoader(object):
     def __init__(self):
         pass
@@ -48,6 +48,8 @@ class FileBoardLoader(BoardLoader):
 
                 board = loadBoardFile(f'{self.folder}/{filename}')
                 if board != None:
+                    # add the board to the value in the dict that 
+                    # corresponds to the level key
                     boards[level].append(board)
 
         self.boards = boards
@@ -56,6 +58,8 @@ class FileBoardLoader(BoardLoader):
         if level not in self.boards:
             return None
 
+        # set our potential boards to the corresponding selected level
+        # and then choose a random one
         boards = self.boards[level]
         i = random.randint(0, len(boards) - 1)
         return Board(boards[i])

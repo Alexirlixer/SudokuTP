@@ -30,12 +30,14 @@ def help_onMousePress(app, mouseX, mouseY):
             setActiveScreen('menu')
 
 def help_readFile(filename):
+    # open the .txt file that contains the help info
     with open(filename, "rt") as f:
         return f.read()
 
 def help_drawHelp(path, left, top, width, height):
     help = help_readFile(path)
 
+    # set the desired length of each line
     lineLength = 54
     drawRect(left, top, width, height, fill='white', opacity = 60)
 
@@ -52,10 +54,14 @@ def help_drawHelp(path, left, top, width, height):
         drawLabel(line, centerX, centerY + i*30, size=13,font='monospace')
 
 def help_redrawAll(app):
+    # draw background
     drawImage('./media/splash.png', 0, 0, opacity=50)
+    # draw buttons
     for button in app.helpScreen.buttons:
         button.draw()
+    # draw the .txt file
     help_drawHelp('help.txt', 50, 98, 480, 380 ) #290, 120)
+    # draw Sudoku logo
     drawLabel('Sudoku', 260, 100, font='cinzel', size=80, fill='forestgreen',
         border='lightgray', borderWidth=2, opacity=60)
 

@@ -3,6 +3,7 @@ from button import *
 
 class MenuScreen:
     def __init__(self):
+        # initialize the buttons we'll need on the menu
         self.buttons = [
             LabelButton('play', 270, 230, 'black', 'forestgreen'),
             LabelButton('help', 270, 330, 'black', 'forestgreen')
@@ -12,6 +13,7 @@ class MenuScreen:
 
 def menu_onAppStart(app):
     app.menuScreen = MenuScreen()
+    # initialize a selected button (may want to change)
     app.menuScreen.buttons[0].isSelected = True
 
 def menu_onKeyPress(app, key):
@@ -25,32 +27,6 @@ def menu_onKeyPress(app, key):
                 app.screenSwitchSound.play()
                 setActiveScreen(button.text)
 
-
-    # if key == 'up':
-    #     for i in range(len(app.menuScreen.buttons)):
-    #         if app.menuScreen.buttons[i].isSelected:
-    #             if i + 1 < len(app.menuScreen.buttons):
-    #                 app.menuScreen.buttons[i].isSelected = False
-    #                 app.menuScreen.buttons[i + 1].isSelected = True
-    #             else:
-    #                 app.menuScreen.buttons[i].isSelected = False
-    #                 app.menuScreen.buttons[0].isSelected = True
-    # elif key == 'down':
-    #     for i in range(len(app.menuScreen.buttons)):
-    #         if app.menuScreen.buttons[i].isSelected:
-    #             if i - 1 >= 0:
-    #                 app.menuScreen.buttons[i].isSelected = False
-    #                 app.menuScreen.buttons[i - 1].isSelected = True
-    #             else:
-    #                 app.menuScreen.buttons[i].isSelected = False
-    #                 app.menuScreen.buttons[-1].isSelected = True
-    # elif key == 'enter':
-    #     for button in app.menuScreen.buttons:
-    #         if button.isSelected:
-    #             app.screenSwitchSound.play()
-    #             setActiveScreen(button.text)
-               
-
 def menu_onMouseMove(app, mouseX, mouseY):
     for button in app.menuScreen.buttons:
         button.mouseOver(mouseX, mouseY)
@@ -62,8 +38,10 @@ def menu_onMousePress(app, mouseX, mouseY):
             setActiveScreen(button.text)
 
 def menu_redrawAll(app):
+    # draw background and Sudoku logo
     drawImage('./media/splash.png', 0, 0, opacity=50)
     drawLabel('Sudoku', 260, 100, font='cinzel', size=80, fill='forestgreen',
                 border='lightgray', borderWidth=2, opacity=60)
+    # draw buttons
     for button in app.menuScreen.buttons:
         button.draw()

@@ -5,6 +5,7 @@ from button import *
 
 class GameScreen:
     def __init__(self):
+        # initialize all of the requirements for the board to be drawn
         self.boardLeft = 70
         self.boardTop = 90
         self.boardWidth = 380
@@ -22,7 +23,6 @@ class GameScreen:
                         self.checkBoxManualLegals,
                         self.checkBoxAutoLegals
                         ]
-        # difficulty, maybe mistakes, legal mode (auto/manual) 1 - 9
         self.manualLegals = dict()
         self.manualLegalsOn = False
         self.timer = TimerLabel('Elapsed', 440, 50)
@@ -35,6 +35,8 @@ def game_onMouseMove(app, mouseX, mouseY):
         button.mouseOver(mouseX, mouseY)
 
 def game_onMousePress(app, mouseX, mouseY):
+    # if the board is completed then allow the user to click the mouse
+    # to return to the play screen
     if app.gameBoard.isSolved():
         setActiveScreen('play')
         return
@@ -48,23 +50,30 @@ def game_onMousePress(app, mouseX, mouseY):
             if button.text == 'back':
                 app.screenSwitchSound.play()
                 setActiveScreen('play')
+            # if manual mode is selected disable auto mode for legals
             elif button.text == 'manual': 
                 app.gameScreen.manualLegalsOn = button.isChecked
                 app.gameScreen.autoLegalsOn = False
                 app.gameScreen.checkBoxAutoLegals.isChecked = False
+            # if auto mode is selected disable manual mode for legals
             elif button.text == 'auto':
                 app.gameScreen.manualLegalsOn = False
                 app.gameScreen.autoLegalsOn = button.isChecked
                 app.gameScreen.checkBoxManualLegals.isChecked = False
 
+    # determine which col and which row the user has clicked in
     col = (mouseX - app.gameScreen.boardLeft) // (app.gameScreen.cellWidth)
     row = (mouseY - app.gameScreen.boardTop) // (app.gameScreen.cellHeight)
+    # if the user clicked within the board set the selected cell to their click
     if 0 <= col < 9 and 0 <= row < 9:
         app.gameScreen.selectedCell = (row, col)
+    # other wise there should be no selected cell
     else:
         app.gameScreen.selectedCell = None
 
 def game_onKeyPress(app, key):
+    # when the board is solved allow the user to press 'r' to return to the
+    # play screen
     if app.gameBoard.isSolved():
         if key == 'r':
             setActiveScreen('play')
@@ -74,42 +83,53 @@ def game_onKeyPress(app, key):
     # this map is for holding shift and pressing #'s
     keyMap = ['!', '@', '#', '$', '%', '^', '&', '*', '(']
     
+    # make sure the user selected a digit 1 - 9
     if '1' <= key <= '9':
         app.gameScreen.hint = None
+        # make sure there is a selected cell
         if app.gameScreen.selectedCell != None:
+            # set the key to an integer value of the selected key
             n = int(key)
             sc = app.gameScreen.selectedCell
 
+            # check that the selected cell is empty
             if app.gameBoard.board[sc[0]][sc[1]] == 0:
+                # check that the cell can be filled
                 if not app.gameBoard.fillCell(sc[0], sc[1], n):
                     app.gameScreen.invalidOption = n
                 else:
                     app.gameScreen.invalidOption = None
-           
+
+    # the user shift toggled their #'s
     elif key in keyMap:
         app.gameScreen.hint = None
+        # make sure there is a selected cell and manual legal mode is on
         if app.gameScreen.selectedCell != None and app.gameScreen.manualLegalsOn:
             n = keyMap.index(key) + 1
             sc = app.gameScreen.selectedCell
 
+            # check if selected cell is in the legal dict
             if sc not in app.gameScreen.manualLegals:
                 app.gameScreen.manualLegals[sc] = []
             legals = app.gameScreen.manualLegals[sc]
+            # remove the number if it is in legals
             if n in legals:
                 legals.remove(n)
             else:
                 legals.append(n)
 
     elif key == 'left' or key == 'right' or key == 'up' or key == 'down':
-        if key == 'up':
-            onKeyUpdateButtons(app.gameScreen.buttons, True)
-        elif key == 'down':
-            onKeyUpdateButtons(app.gameScreen.buttons, False)
+        # if key == 'up':
+        #     onKeyUpdateButtons(app.gameScreen.buttons, True)
+        # elif key == 'down':
+        #     onKeyUpdateButtons(app.gameScreen.buttons, False)
         app.gameScreen.hint = None
         sc = app.gameScreen.selectedCell
+        # initialize a selected cell on an intial arrow key press
         if sc == None:
             app.gameScreen.selectedCell = (0, 0)
         else:
+            # logic for shifting selected cell
             if key == 'left':
                 if sc[1] - 1 >= 0:
                     sc = (sc[0], sc[1] - 1)
@@ -123,25 +143,48 @@ def game_onKeyPress(app, key):
                 if sc[0] - 1 >= 0:
                     sc = (sc[0] - 1, sc[1])
             app.gameScreen.selectedCell = sc
+    # get hints
     elif key == 'h':
         app.gameScreen.hint = app.gameBoard.getHint()
+    # display legals
     elif key == 'l':
         app.gameScreen.hint = None
         app.gameScreen.autoLegalsOn = not app.gameScreen.autoLegalsOn
+        app.gameScreen.manualLegalsOn = False
+        for button in app.gameScreen.buttons:
+            if button.text == 'auto':
+                button.isChecked = app.gameScreen.autoLegalsOn
+                app.gameScreen.checkBoxManualLegals.isChecked = False
+                break
+    elif key == 'm':
+        app.gameScreen.hint = None
+        app.gameScreen.autoLegalsOn = False
+        app.gameScreen.manualLegalsOn = not app.gameScreen.manualLegalsOn
+        for button in app.gameScreen.buttons:
+            if button.text == 'manual':
+                button.isChecked = app.gameScreen.manualLegalsOn
+                app.gameScreen.checkBoxAutoLegals.isChecked = False
+                break 
+    # solve the board
     elif key == 's':
         app.gameScreen.hint = None
         app.gameBoard.solve()
+    # apply hints
     elif key == 'a': 
         if app.gameScreen.hint != None: 
             app.gameBoard.applyHint(app.gameScreen.hint)
         app.gameScreen.hint = None
-    elif key == 'enter':
-        for button in app.gameScreen.buttons:
-            if button.isSelected:
-                if type(button) == Checkbox:
-                    button.isChecked = not button.isChecked
-                elif type(button) == LabelButton:
-                    pass
+    # select button with 'enter' key
+    # elif key == 'enter':
+    #     for button in app.gameScreen.buttons:
+    #         if button.isSelected:
+    #             if type(button) == Checkbox:
+    #                 button.isChecked = not button.isChecked
+    #             elif type(button) == LabelButton:
+    #                 pass
+    elif key == 'b':
+        app.screenSwitchSound.play()
+        setActiveScreen('play')  
 
 
 # from cmu cs academy notes 6.2.3
@@ -154,10 +197,12 @@ def drawBoard(app):
             drawCell(app, row, col)
 
 # Basic function is from cmu cs academy notes 6.2.3
+# with changes made to accomodate drawing values
 def drawCell(app, row, col):
     cellLabel = ''
     fillColor = None
     if app.gameScreen.selectedCell == (row, col):
+        # if an invalid option was entered make the cell red
         if app.gameScreen.invalidOption != None:
             cellLabel = str(app.gameScreen.invalidOption)
             fillColor = 'red'
@@ -174,6 +219,8 @@ def drawCell(app, row, col):
              colBlockStart <= col < colBlockStart + 3)):
             fillColor = 'lightGrey'
 
+    # make the hint color light blue if its not the selected cell, other wise
+    # make it a slightly darker blue
     if app.gameScreen.hint != None:
         sc = app.gameScreen.selectedCell
         for cell in app.gameScreen.hint.cells:
@@ -188,8 +235,10 @@ def drawCell(app, row, col):
              fill=fillColor, border='black',
              borderWidth=app.gameScreen.cellBorderWidth)
     
+    # check cell empty
     if app.gameBoard.board[row][col] == 0:
-        drawLabel(cellLabel, cellLeft + cellWidth/2, cellTop + cellHeight/2, size = 25)
+        drawLabel(cellLabel, cellLeft + cellWidth/2, cellTop + cellHeight/2, 
+                  size = 25)
         if app.gameScreen.autoLegalsOn == True or app.gameScreen.manualLegalsOn:
             legalWidth = cellWidth / 3
             legalHeight = cellHeight / 3 
@@ -201,7 +250,8 @@ def drawCell(app, row, col):
                 else:
                     legals = []
                 
-                    
+            
+            # draw legals
             for i in range(3):
                 for j in range(3):
                     l = ''
@@ -230,7 +280,7 @@ def getCellSize(app):
 
 # from cmu cs academy notes 6.2.3
 def drawBoardBorder(app):
-  # draw the board outline (with double-thickness):
+  # draw the board outline (with triple-thickness):
   offset = 3
   drawRect(app.gameScreen.boardLeft - offset, app.gameScreen.boardTop - offset, 
            app.gameScreen.boardWidth + 
@@ -239,12 +289,12 @@ def drawBoardBorder(app):
            borderWidth=3*app.gameScreen.cellBorderWidth)
 
 def game_redrawAll(app):
+    # draw background
     drawImage('./media/splash.png', 0, 0, opacity=60)
-    # drawLabel('Sudoku', 260, 100, font='cinzel', size=80, fill='forestgreen',
-               # border='lightgray', borderWidth=2, opacity=60)
     drawBoard(app)
     drawBoardBorder(app)
     s = app.gameScreen
+    # draw block dividers
     drawLine(s.boardLeft, s.boardTop + s.cellHeight * 3, s.boardLeft + s.boardWidth,
              s.boardTop + s.cellHeight * 3, lineWidth = 3)
     drawLine(s.boardLeft, s.boardTop + s.cellHeight * 6, s.boardLeft + s.boardWidth,
@@ -255,23 +305,20 @@ def game_redrawAll(app):
     drawLine(s.boardLeft + s.cellWidth * 6, s.boardTop, 
               s.boardLeft + s.cellWidth * 6, s.boardTop + s.boardHeight, 
               lineWidth = 3)
-    
-    # drawLabel(app.gameLevel, )
+
     app.gameScreen.timer.draw()
     drawLabel(f'Level: {app.gameLevel.capitalize()}', 100, 50, font = 'cinzel',
               fill = 'black', size = 17, opacity = 60)
-    # drawLabel(app.gameLevel, 40, 40)
 
-
-    # drawLabel(f"{app.gameBoard.rowCount}x{app.gameBoard.colCount}", 40, 60)
     for button in app.gameScreen.buttons:
         button.draw()
+
     drawLabel('Legals', 385, 500, font='cinzel',
                   size=17, fill='black', border='black', borderWidth=0,
                   opacity=60)
+    
+    # display 'game over' if board is solved
     if app.gameBoard.isSolved():
         drawRect(60, 200, 440, 160, fill="lightgray", opacity=80)
         drawLabel('Game Over', 280, 275, font='cinzel', size=80, fill='lightgray',
                     border='forestgreen', borderWidth=2, opacity=100)
-
-

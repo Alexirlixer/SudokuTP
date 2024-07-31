@@ -2,7 +2,7 @@ from cmu_graphics import *
 import time
 from datetime import datetime, timedelta
 import math
-        
+
 class TimerLabel:
     def __init__(self, text, left, top,opacity=60, size=17):
         self.text = text
@@ -89,7 +89,7 @@ class Checkbox:
     def mousePress(self, mouseX, mouseY):
        if self.mouseOver(mouseX, mouseY):
            self.isChecked = not self.isChecked
-      # return self.isChecked
+      # return self.isChecked (this is incorrect)
 
     def mouseOver(self, mouseX, mouseY):
         # calculate the positions from center for left, right, top, bottom
