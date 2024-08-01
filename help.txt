@@ -1,11 +1,11 @@
 Keyboard
   - use arrows to navigate and enter to select
   - 1..9 keys to enter number in selected cell
-  - h to show hint, a to apply hint, b to go back
-  - l for auto legals
+  - h to show hint, a to apply hint, x to apply singletons
+  - s to solve, l for auto legals
   - m for manual legals
      - in this mode shift+1..9 will add/remove legals
-  - r to start new game on game over  
+  - r to start new game on game over, b to go back  
 Mouse
   - click to select cell
   - when game is over click to reset

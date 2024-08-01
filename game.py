@@ -184,7 +184,15 @@ def game_onKeyPress(app, key):
     #                 pass
     elif key == 'b':
         app.screenSwitchSound.play()
-        setActiveScreen('play')  
+        setActiveScreen('play')
+    elif key == 'x':
+        hint = app.gameBoard.getHint()
+        while hint != None:
+            if hint.region != 'cell':
+                break
+            else:
+                app.gameBoard.applyHint(hint)
+            hint = app.gameBoard.getHint()  
 
 
 # from cmu cs academy notes 6.2.3

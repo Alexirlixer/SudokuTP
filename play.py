@@ -5,13 +5,15 @@ import time
 class PlayScreen:
     def __init__(self):
         # initialize buttons
+        self.generate = Checkbox('generate', 450, 500, 'black', 'black')
         self.buttons = [ 
             LabelButton('easy', 270, 200, 'black', 'darkGreen', size = 40),
             LabelButton('medium', 270, 260, 'black', 'darkGreen', size = 40),
             LabelButton('hard', 270, 320, 'black', 'darkGreen', size = 40),
             LabelButton('expert', 270, 380, 'black', 'darkGreen', size = 40),
             LabelButton('evil', 270, 440, 'black', 'darkGreen', size = 40),
-            LabelButton('back', 60, 500, 'black', 'darkGreen', size = 30)
+            LabelButton('back', 60, 500, 'black', 'darkGreen', size = 30),
+            self.generate
             ]
 
 def play_onAppStart(app):
@@ -30,12 +32,18 @@ def play_onMousePress(app, mouseX, mouseY):
             if button.text == 'back':
                 app.screenSwitchSound.play()
                 setActiveScreen('menu')
+            elif button.text == 'generate':
+                button.mousePress(mouseX, mouseY)
             else:
                 # otherwise we need to select a random board of the specified
                 # difficulty and then start the game
                 app.screenSwitchSound.play()
                 app.gameLevel = button.text
-                app.gameBoard = app.boardLoader.loadBoard(app.gameLevel)
+                if app.playScreen.generate.isChecked:
+                        app.gameBoard = app.boardLoader.generateBoard(app.gameLevel)
+                else:
+                    app.gameBoard = app.boardLoader.loadBoard(app.gameLevel)
+                app.gameBoard.print()
                 app.gameStart = time.time()
                 setActiveScreen('game')
 
@@ -51,10 +59,16 @@ def play_onKeyPress(app, key):
                 if button.text == 'back':
                     app.screenSwitchSound.play()
                     setActiveScreen('menu')
+                elif button.text == 'generate':
+                    button.isChecked = not button.isChecked
                 else:
                     app.screenSwitchSound.play()
                     app.gameLevel = button.text
-                    app.gameBoard = app.boardLoader.loadBoard(app.gameLevel)
+                    if app.playScreen.generate.isChecked:
+                        app.gameBoard = app.boardLoader.generateBoard(app.gameLevel)
+                    else:
+                        app.gameBoard = app.boardLoader.loadBoard(app.gameLevel)
+                    app.gameBoard.print()
                     app.gameStart = time.time()
                     setActiveScreen('game')
                 
