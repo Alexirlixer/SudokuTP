@@ -164,6 +164,8 @@ class Board:
         if value not in cellLegals:
             return False
 
+        if checkSolverDeadend(self, row, col, value):
+            return False
         # the cell was empty and value was part of legals
         # - set the value and update board and legals
         self.board[row][col] = value

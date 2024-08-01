@@ -43,7 +43,7 @@ def play_onMousePress(app, mouseX, mouseY):
                         app.gameBoard = app.boardLoader.generateBoard(app.gameLevel)
                 else:
                     app.gameBoard = app.boardLoader.loadBoard(app.gameLevel)
-                app.gameBoard.print()
+                # app.gameBoard.print()
                 app.gameStart = time.time()
                 setActiveScreen('game')
 
@@ -68,7 +68,7 @@ def play_onKeyPress(app, key):
                         app.gameBoard = app.boardLoader.generateBoard(app.gameLevel)
                     else:
                         app.gameBoard = app.boardLoader.loadBoard(app.gameLevel)
-                    app.gameBoard.print()
+                    # app.gameBoard.print()
                     app.gameStart = time.time()
                     setActiveScreen('game')
                 
