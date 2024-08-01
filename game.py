@@ -2,6 +2,8 @@ from cmu_graphics import *
 import time 
 import datetime 
 from button import *
+import copy
+from boards.board import Board
 
 class GameScreen:
     def __init__(self):
@@ -98,7 +100,14 @@ def game_onKeyPress(app, key):
                 if not app.gameBoard.fillCell(sc[0], sc[1], n):
                     app.gameScreen.invalidOption = n
                 else:
-                    app.gameScreen.invalidOption = None
+                    # verify that this valid value will not lead to an 
+                    # unsolvable game in the future
+                    test = Board(copy.deepcopy(app.gameBoard.board))
+                    if not test.solve():
+                        app.gameScreen.invalidOption = n
+                        app.gameBoard.emptyCell(sc[0], sc[1])
+                    else:
+                        app.gameScreen.invalidOption = None
 
     # the user shift toggled their #'s
     elif key in keyMap:
